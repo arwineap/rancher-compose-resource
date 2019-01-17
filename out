@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # STDIN gives configured params, and source config
 
 # $1 is the path to the build_root
