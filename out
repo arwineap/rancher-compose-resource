@@ -102,7 +102,7 @@ if [[ "${params__upgrade}" != "false" ]]; then
 fi
 cmdline="${cmdline} ${params__service}"
 
-cd $params__path
+cd "$1/$params__path"
 
 eval $cmdline
 
