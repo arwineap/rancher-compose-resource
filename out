@@ -1,0 +1,113 @@
+# STDIN gives configured params, and source config
+
+# $1 is the path to the build_root
+
+read varstdin
+
+source__url=$(echo "${varstdin}" | jq -r '.source.url')
+source__access_key=$(echo "${varstdin}" | jq -r '.source.access_key')
+source__secret_key=$(echo "${varstdin}" | jq -r '.source.secret_key')
+
+if [[ "${source__url}" == "null" ]]; then
+    echo "please specify a url"
+    exit 1
+fi
+
+if [[ "${source__access_key}" == "null" ]]; then
+    echo "please specify an access_key"
+    exit 1
+fi
+
+
+if [[ "${source__secret_key}" == "null" ]]; then
+    echo "please specify a secret key"
+    exit 1
+fi
+
+
+params__path=$(echo "${varstdin}" | jq -r '.params.path')
+params__file=$(echo "${varstdin}" | jq -r '.params.file')
+params__rancher_file=$(echo "${varstdin}" | jq -r '.params.rancher_file')
+params__project=$(echo "${varstdin}" | jq -r '.params.project')
+params__service=$(echo "${varstdin}" | jq -r '.params.service')
+params__pull=$(echo "${varstdin}" | jq -r '.params.pull')
+params__upgrade=$(echo "${varstdin}" | jq -r '.params.upgrade')
+
+
+
+if [[ "${params__path}" == "null" ]]; then
+    echo "please specify a path parameter"
+    exit 1
+fi
+
+if [[ "${params__file}" == "null" ]]; then
+    echo "setting file to 'docker-compose.yml'"
+    params__file="docker-compose.yml"
+fi
+
+if [[ "${params__rancher_file}" == "null" ]]; then
+    echo "setting rancher_file to 'rancher-compose.yml'"
+    params__rancher_file="rancher-compose.yml"
+fi
+
+if [[ "${params__project}" == "null" ]]; then
+    echo "please specify a project parameter"
+    exit 1
+fi
+
+if [[ "${params__service}" == "null" ]]; then
+    echo "please specify service parameter"
+    exit 1
+fi
+
+if [[ "${params__pull}" == "null" ]]; then
+    echo "setting pull to false"
+    params__pull="false"
+fi
+
+if [[ "${params__upgrade}" == "null" ]]; then
+    params__upgrade="false"
+fi
+
+if ! [[ "${params__upgrade}" =~ ^(false|true|force|rollback|confirm)$ ]]; then
+    echo "upgrade parameter must be true, false, force, rollback, or confirm"
+    exit 1
+fi
+
+if ! [[ "${params__pull}" =~ ^(true|false) ]]; then
+    echo "pull must be true or false"
+fi
+
+cmdline="rancher-compose --project-name ${params__project} --url ${source__url} --access-key ${source__access_key} --secret-key ${source__secret_key} --file ${params__file} up -d"
+if [[ "${params__pull}" == "true" ]]; then
+    cmdline="${cmdline} --pull"
+fi
+if [[ "${params__upgrade}" != "false" ]]; then
+    case $params__upgrade in
+        force)
+            cmdline="${cmdline} --force-upgrade"
+            ;;
+        rollback)
+            cmdline="${cmdline} --rollback"
+            ;;
+        confirm)
+            cmdline="${cmdline} --confirm-upgrade"
+            ;;
+        true)
+            cmdline="${cmdline} --upgrade"
+            ;;
+    esac
+fi
+cmdline="${cmdline} ${params__service}"
+
+cd $params__path
+
+echo $cmdline
+#eval $cmdline
+
+if [[ "$?" == "0" ]]; then
+    echo "{\"version\": {\"timestamp\": \"$(date +%s)\"}}"
+else
+    exit 1
+fi
+
