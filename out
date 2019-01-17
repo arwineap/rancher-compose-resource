@@ -6,6 +6,8 @@
 
 read varstdin
 
+echo $varstdin > /tmp/given_stdin
+
 source__url=$(echo "${varstdin}" | jq -r '.source.url')
 source__access_key=$(echo "${varstdin}" | jq -r '.source.access_key')
 source__secret_key=$(echo "${varstdin}" | jq -r '.source.secret_key')
