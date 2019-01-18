@@ -82,7 +82,7 @@ if ! [[ "${params__pull}" =~ ^(true|false) ]]; then
     echo "pull must be true or false"
 fi
 
-cmdline="rancher-compose --project-name ${params__project} --url ${source__url} --access-key ${source__access_key} --secret-key ${source__secret_key} --file ${params__file} up -d"
+cmdline="unbuffer rancher-compose --project-name ${params__project} --url ${source__url} --access-key ${source__access_key} --secret-key ${source__secret_key} --file ${params__file} up -d"
 if [[ "${params__pull}" == "true" ]]; then
     cmdline="${cmdline} --pull"
 fi
