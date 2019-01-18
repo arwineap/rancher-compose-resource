@@ -106,7 +106,7 @@ cmdline="${cmdline} ${params__service}"
 
 cd "$1/$params__path"
 
-eval $cmdline 2>&1
+eval $cmdline >&2
 
 if [[ "$?" == "0" ]]; then
     echo "{\"version\": {\"timestamp\": \"$(date +%s)\"}}"
